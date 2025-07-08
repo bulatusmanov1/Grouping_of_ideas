@@ -1,3 +1,5 @@
+import re
+
 def get_key_words(texts: List[str]) -> list[list]:
     """
     Извлекает уникальные ключевые слова из текста и возвращает их в список.
