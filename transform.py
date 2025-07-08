@@ -25,7 +25,7 @@ def extract_duplicates_and_uniques(
     """
     Делит идеи на кластеры повторов и уникальные.
     """
-    print("Анализируем кластеры на повторы и уникальные идеи...")
+    #print("Анализируем кластеры на повторы и уникальные идеи...")
 
     groups = df_clusters.groupby('cluster_id')['idea_id'].apply(list)
 
@@ -36,45 +36,41 @@ def extract_duplicates_and_uniques(
 
     uniques = groups.get(-1, [])
 
-    print(f"Повторяющихся групп: {len(duplicates)}")
-    print(f"Уникальных идей: {len(uniques)}")
+    #print(f"Повторяющихся групп: {len(duplicates)}")
+    #print(f"Уникальных идей: {len(uniques)}")
 
     return duplicates, uniques
 
 def smart_grouping(
-    token_lists: List[List[str]], 
+    token_lists: List[List[str]],
     threshold: float
-) -> List[List[List[str]]]:
+) -> List[List[int]]:
     """
-    Разделяет список списков слов на подгруппы, где схожесть > threshold процентов.
-
-    :param token_lists: список списков слов (токенов)
-    :param threshold: минимальный процент схожести (0–100)
-    :return: список групп, каждая из которых — список списков слов
+    Возвращает подгруппы, каждая из которых — список индексов token_lists, схожих по содержанию.
     """
     def similarity(a: List[str], b: List[str]) -> float:
         set_a, set_b = set(a), set(b)
         intersection = set_a & set_b
         union = set_a | set_b
         return 100 * len(intersection) / len(union) if union else 0.0
-    
-    token_lists = [tokens if tokens else ['АРГЕС'] for tokens in token_lists]
 
-    groups = []
+    token_lists = [tokens if tokens else ['АРГЕС'] for tokens in token_lists]
     used = [False] * len(token_lists)
+    groups = []
 
     for i, tokens in enumerate(token_lists):
         if used[i]:
             continue
-        group = [tokens]
+        group = [i]
         used[i] = True
         for j in range(i + 1, len(token_lists)):
             if not used[j] and similarity(tokens, token_lists[j]) >= threshold:
-                group.append(token_lists[j])
+                group.append(j)
                 used[j] = True
         groups.append(group)
 
     return groups
+
 
 def get_key_words(texts: List[str]) -> list[list]:
     """

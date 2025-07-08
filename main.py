@@ -2,32 +2,6 @@ from utils import *
 from embedding import *
 from transform import *
 
-"""
-def start_p_1():
-    print("Шаг 1/3: Загружаем и обрабатываем данные...")
-    df = load_and_preprocess_data('data.csv')
-    
-    print("Шаг 2/3: Строим эмбеддинги...")
-    texts = df['full_text'].tolist()
-    texts = list(tqdm(texts, desc="Подготовка текстов", unit="текст"))
-    embeddings = compute_embeddings(texts)
-    
-    print("Шаг 3/3: Сохраняем эмбеддинги в файл...")
-    #save_embeddings(df, embeddings, 'embeddings.jsonl')
-    
-    print("Эмбеддинги сохранены в 'embeddings.jsonl'")
-
-def start_p_2():
-    #idea_ids, embeddings = load_embeddings('embeddings.jsonl')
-    df_clusters = cluster_embeddings(idea_ids, embeddings, eps=0.25, min_samples=2)
-    duplicate_groups, unique_ideas = extract_duplicates_and_uniques(df_clusters)
-
-    print("Найдено повторяющихся групп:", len(duplicate_groups))
-    for i, group in enumerate(duplicate_groups, 1):
-        print(f"Группа {i}: {group}")
-
-    print("Уникальных идей:", len(unique_ideas))
-"""
 def step_1():
     '''
     Достали из общей ячейки список ключевых слов, удалили из них названия, создали слова 
@@ -41,27 +15,46 @@ def step_1():
 def step_2():
     idea_ids, contexts, embeddings = json_load('embeddings.jsonl')
     df_clusters = cluster_embeddings(idea_ids, embeddings, eps=0.25, min_samples=2)
-    duplicate_groups, unique_ideas = extract_duplicates_and_uniques(df_clusters)
-    k = 0  # общее число подгрупп
-    c = 0  # пока не используется
+    duplicate_groups, _ = extract_duplicates_and_uniques(df_clusters)
+
+    total_subgroups = 0
 
     for i, group in enumerate(duplicate_groups, 1):
-        print(f"\n=== Обрабатываем кластер #{i} с {len(group)} идеями ===")
+        #print(f"\n=== Кластер #{i} (всего {len(group)} идей) ===")
+
         group_indices = [idea_ids.index(idea_id) for idea_id in group]
-        group_contexts = [contexts[idx] for idx in group_indices]
+        group_contexts = [contexts[idx] if contexts[idx] else ['АРГЕС'] for idx in group_indices]
         group_ids = [idea_ids[idx] for idx in group_indices]
+
         subgroups = smart_grouping(group_contexts, threshold=20)
 
-        for j, subgroup in enumerate(subgroups, 1):
-            k += 1
-            print(f"  Подгруппа {j}: {len(subgroup)} элементов")
-            for context in subgroup:
-                idx = group_contexts.index(context)
-                idea_id = group_ids[idx]
-                print("   -", idea_id)
+        for j, subgroup_indices in enumerate(subgroups, 1):
+            #print(f"  Подгруппа {j}:")
+            for idx in subgroup_indices:
+                #print(f"    - {group_ids[idx]}")
+                pass
+            total_subgroups += 1
 
-    print(f"\nВсего подгрупп: {k}, пропущено: {c}")
-    
+    #print(f"\nВсего подгрупп: {total_subgroups}")
+    from collections import defaultdict
+
+    cluster_subgroups_contexts = defaultdict(list)
+
+    for group in duplicate_groups:
+        group_indices = [idea_ids.index(idea_id) for idea_id in group]
+        group_contexts = [contexts[idx] if contexts[idx] else ['АРГЕС'] for idx in group_indices]
+
+        subgroups = smart_grouping(group_contexts, threshold=20)
+        for subgroup in subgroups:
+            subgroup_contexts = [group_contexts[i] for i in subgroup]
+            cluster_subgroups_contexts[len(cluster_subgroups_contexts)].append(subgroup_contexts)
+
+    print(cluster_subgroups_contexts)
+
+    #print(f"[debug] Кол-во подгрупп в cluster_subgroups_contexts: {len(cluster_subgroups_contexts)}")
+    #find_best_subgroup_for_new_idea('Вывод из эксплуатации печи П-1 на установке №7;Предлагается вывести из эксплуатации печь П-1 на установке № 7 за счёт  монтажа дополнительного теплообменника для подогрева сырья в колонну К-1.', cluster_subgroups_contexts)
+
+
 
 actions = {
     1: step_1,
