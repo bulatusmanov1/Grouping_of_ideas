@@ -1,3 +1,5 @@
+import flet as ft
+from pages.work import WorkPage
 from utils import *
 from embedding import *
 from transform import *
@@ -29,31 +31,13 @@ def step_2():
         subgroups = smart_grouping(group_contexts, threshold=20)
 
         for j, subgroup_indices in enumerate(subgroups, 1):
-            #print(f"  Подгруппа {j}:")
+            print(f"  Подгруппа {j}:")
             for idx in subgroup_indices:
-                #print(f"    - {group_ids[idx]}")
+                print(f"    - {group_ids[idx]}")
                 pass
             total_subgroups += 1
 
-    #print(f"\nВсего подгрупп: {total_subgroups}")
-    from collections import defaultdict
-
-    cluster_subgroups_contexts = defaultdict(list)
-
-    for group in duplicate_groups:
-        group_indices = [idea_ids.index(idea_id) for idea_id in group]
-        group_contexts = [contexts[idx] if contexts[idx] else ['АРГЕС'] for idx in group_indices]
-
-        subgroups = smart_grouping(group_contexts, threshold=20)
-        for subgroup in subgroups:
-            subgroup_contexts = [group_contexts[i] for i in subgroup]
-            cluster_subgroups_contexts[len(cluster_subgroups_contexts)].append(subgroup_contexts)
-
-    print(cluster_subgroups_contexts)
-
-    #print(f"[debug] Кол-во подгрупп в cluster_subgroups_contexts: {len(cluster_subgroups_contexts)}")
-    #find_best_subgroup_for_new_idea('Вывод из эксплуатации печи П-1 на установке №7;Предлагается вывести из эксплуатации печь П-1 на установке № 7 за счёт  монтажа дополнительного теплообменника для подогрева сырья в колонну К-1.', cluster_subgroups_contexts)
-
+    print(f"\nВсего подгрупп: {total_subgroups}")
 
 
 actions = {
@@ -69,6 +53,28 @@ def run_steps(steps_to_run):
         else:
             print(f"[!] Step {step_num} not found.")
 
+
+
+def main(page):
+    page.bgcolor = "#FFFFFF"  
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER  
+
+    page.add(ft.Text("Добро пожаловать в приложение", style="heading", color="#E10000"))
+
+    enter_button = ft.ElevatedButton(
+        "Войти", 
+        on_click=lambda e: work_page(page), 
+        width=200, 
+        color="#FFFFFF", 
+        bgcolor="#E10000"
+    )
+    page.add(enter_button)
+
+def work_page(page):
+    WorkPage(page)
+
 if __name__ == "__main__":
+    ft.app(target=main)
     #df = load_and_preprocess_data('data.csv') # Загрузили данные, преобразовали название идеи и её описание в одну ячейку
-    run_steps([2])
+    #run_steps([2])
