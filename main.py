@@ -36,29 +36,39 @@ def step_2():
             total_subgroups += 1
 
     #print(f"\nВсего подгрупп: {total_subgroups}")
-    from collections import defaultdict
 
-    cluster_subgroups_contexts = defaultdict(list)
+def step_3():
+    idea_ids, contexts, embeddings = json_load('embeddings.jsonl')
+    df_clusters = cluster_embeddings(idea_ids, embeddings, eps=0.25, min_samples=2)
+    duplicate_groups, _ = extract_duplicates_and_uniques(df_clusters)
+
+    grouped_ideas = []
+    total_subgroups = 0
 
     for group in duplicate_groups:
         group_indices = [idea_ids.index(idea_id) for idea_id in group]
         group_contexts = [contexts[idx] if contexts[idx] else ['АРГЕС'] for idx in group_indices]
+        group_ids = [idea_ids[idx] for idx in group_indices]
 
         subgroups = smart_grouping(group_contexts, threshold=20)
-        for subgroup in subgroups:
-            subgroup_contexts = [group_contexts[i] for i in subgroup]
-            cluster_subgroups_contexts[len(cluster_subgroups_contexts)].append(subgroup_contexts)
 
-    print(cluster_subgroups_contexts)
+        for subgroup_indices in subgroups:
+            subgroup = {
+                "idea_ids": [group_ids[idx] for idx in subgroup_indices],
+                "texts": [" ".join(group_contexts[idx]) for idx in subgroup_indices]
+            }
+            grouped_ideas.append(subgroup)
+            total_subgroups += 1
 
-    #print(f"[debug] Кол-во подгрупп в cluster_subgroups_contexts: {len(cluster_subgroups_contexts)}")
-    #find_best_subgroup_for_new_idea('Вывод из эксплуатации печи П-1 на установке №7;Предлагается вывести из эксплуатации печь П-1 на установке № 7 за счёт  монтажа дополнительного теплообменника для подогрева сырья в колонну К-1.', cluster_subgroups_contexts)
+    with open("grouped_ideas.json", "w", encoding="utf-8") as f:
+        json.dump(grouped_ideas, f, ensure_ascii=False, indent=2)
 
-
+    print(f"Всего подгрупп: {total_subgroups}")
 
 actions = {
     1: step_1,
     2: step_2,
+    3: step_3,
 }
 
 def run_steps(steps_to_run):
@@ -70,5 +80,13 @@ def run_steps(steps_to_run):
             print(f"[!] Step {step_num} not found.")
 
 if __name__ == "__main__":
-    #df = load_and_preprocess_data('data.csv') # Загрузили данные, преобразовали название идеи и её описание в одну ячейку
-    run_steps([2])
+    df = load_and_preprocess_data('data.csv') # Загрузили данные, преобразовали название идеи и её описание в одну ячейку
+    #run_steps([3])
+    results, best_group = match_new_idea_to_old("Увеличение температуры подачи хим. оч. воды на котлы установок Завода.", df)
+
+    for idea_id, text, sim in results:
+        print(f"{idea_id} ({sim}%): {text[:100]}...")
+
+    print("Ближайшая подгруппа включает:", best_group.get('idea_ids', []))
+
+

@@ -1,4 +1,5 @@
 import pandas as pd
+import torch
 import numpy as np
 from typing import List, Dict, Tuple
 from sentence_transformers import SentenceTransformer
@@ -41,38 +42,58 @@ def cluster_embeddings(
     return df
 
 
-
-def find_best_subgroup_for_new_idea(new_text: str, cluster_subgroups_contexts: Dict[int, List[List[List[str]]]], threshold=20.0):
+def match_new_idea_to_old(
+    new_text: str,
+    df: pd.DataFrame,
+    top_n: int = 5,
+    model_name: str = 'all-MiniLM-L6-v2',
+    grouped_path: str = 'grouped_ideas.json'
+) -> Tuple[List[Tuple[str, str, float]], Dict]:
     """
-    Находит подгруппу, куда попадёт новая идея, при добавлении её в каждую существующую подгруппу всех кластеров.
+    Принимает новую идею и:
+    - Возвращает топ-N похожих идей [(idea_id, полный_текст, %_сходства), ...]
+    - Наиболее близкую подгруппу из grouped_ideas.json
     """
-    print("[1] Обработка новой идеи...")
-    print("[debug] Вызвана find_best_subgroup_for_new_idea")
-    
-    context = get_key_words([new_text])[0]
-    filtered_context = filter_organizations_spacy(context)
-    clean_text = get_clean_text([new_text], [filtered_context])[0]
-    tokens_new = filtered_context if filtered_context else ['АРГЕС']
+    idea_ids, old_key_words, old_embeddings = json_load('embeddings.jsonl')
+    old_texts = df.set_index('idea_id').loc[idea_ids]['full_text'].tolist()
 
-    for cluster_id, subgroups in cluster_subgroups_contexts.items():
-        for i, subgroup_contexts in enumerate(subgroups):
-            contexts_with_new = subgroup_contexts + [tokens_new]
-            subgroups_new = smart_grouping(contexts_with_new, threshold=threshold)
+    new_key_words = get_key_words([new_text])
+    new_key_words_filtered = filter_organizations_spacy(new_key_words[0])
+    new_cleaned_text = get_clean_text([new_text], [new_key_words_filtered])[0]
 
-            for subgroup in subgroups_new:
-                if len(subgroup) > 1 and (len(contexts_with_new) - 1) in subgroup:
-                    matched_contexts = [subgroup_contexts[idx] for idx in subgroup if idx != len(contexts_with_new) - 1]
-                    
-                    print(f"\n✅ Идея попала в кластер {cluster_id}, подгруппу {i + 1}")
-                    print("Похожие идеи в подгруппе:")
-                    for ctx in matched_contexts:
-                        print("—", ";".join(ctx))
-                    
-                    return cluster_id, i + 1, matched_contexts
+    model = SentenceTransformer(model_name)
+    new_embedding = model.encode([new_cleaned_text], convert_to_numpy=True)[0]
 
-    print("❌ Идея не попала ни в одну подгруппу")
-    return None
+    # --- Блок 1: Топ-N самых похожих идей ---
+    similarities = cosine_similarity([new_embedding], old_embeddings)[0]
+    ranked_indices = np.argsort(similarities)[::-1]
+    results = []
 
+    for idx in ranked_indices[:top_n]:
+        matched_text = old_texts[idx]
+        idea_id = idea_ids[idx]
+        similarity_percent = round(similarities[idx] * 100, 2)
+        results.append((idea_id, matched_text, similarity_percent))
 
+    # --- Блок 2: Поиск наиболее подходящей подгруппы ---
+    best_group = None
+    best_score = -1
 
+    try:
+        with open(grouped_path, "r", encoding="utf-8") as f:
+            grouped_ideas = json.load(f)
 
+        for group in grouped_ideas:
+            group_texts = group['texts']
+            group_embs = model.encode(group_texts, convert_to_numpy=True)
+            group_mean_emb = np.mean(group_embs, axis=0)
+            score = cosine_similarity([new_embedding], [group_mean_emb])[0][0]
+
+            if score > best_score:
+                best_score = score
+                best_group = group
+
+    except FileNotFoundError:
+        best_group = {}
+
+    return results, best_group
