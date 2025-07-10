@@ -30,7 +30,7 @@
             <h3 class="my-4">Результаты поиска совпадений:</h3>
             {% for idea_id, text, sim in results %}
                 <div class="result-item">
-                    <h4>Идея: {{ idea_id }}</h4>
+                    <h4>{{ idea_id }}</h4>
                     <p><strong>Текст:</strong> {{ text }}</p>
                     <p><strong>Сходство:</strong> {{ sim }}%</p>
                     <hr class="divider">
