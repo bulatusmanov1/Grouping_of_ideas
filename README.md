@@ -68,8 +68,6 @@ pip install fastapi uvicorn pandas scikit-learn python-multipart
 
 В данном разделе поговорим о том, как запустить проект "руками".
 
-### 1. PostgreSQL
-
 Убедитесь, что у вас скачан postgresql:
 
 ```bash
