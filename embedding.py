@@ -1,15 +1,14 @@
+import json
 import pandas as pd
-import torch
 import numpy as np
 from typing import List, Dict, Tuple
-from sentence_transformers import SentenceTransformer
-from tqdm import tqdm
 from sklearn.cluster import DBSCAN
-from sklearn.metrics.pairwise import cosine_distances
+from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+from jsonl import *
 from embedding import *
 from transform import *
-from sklearn.metrics.pairwise import cosine_similarity
-from db import Company_DB
+from db.db_class import Company_DB
 
 def compute_embeddings(texts: List[str], model_name: str = 'all-MiniLM-L6-v2') -> np.ndarray:
     """
@@ -19,23 +18,15 @@ def compute_embeddings(texts: List[str], model_name: str = 'all-MiniLM-L6-v2') -
     embeddings = model.encode(texts, show_progress_bar=True, convert_to_numpy=True)
     return embeddings
 
-def cluster_embeddings(
-    idea_ids: List[str],
-    embeddings: np.ndarray,
-    eps: float = 0.25,
-    min_samples: int = 2
-) -> pd.DataFrame:
-    """
-    Кластеризует эмбеддинги с помощью DBSCAN и возвращает DataFrame с метками кластеров.
-    """
-    clustering = DBSCAN(metric='cosine', eps=eps, min_samples=min_samples)
-    labels = clustering.fit_predict(embeddings)
+def cluster_embeddings(idea_ids, embeddings, eps=0.25, min_samples=2):
+        clustering = DBSCAN(metric='cosine', eps=eps, min_samples=min_samples)
+        labels = clustering.fit_predict(embeddings)
 
-    df = pd.DataFrame({
-        'idea_id': idea_ids,
-        'cluster_id': labels
-    })
-    return df
+        df = pd.DataFrame({
+            'idea_id': idea_ids,
+            'cluster_id': labels
+        })
+        return df
 
 def match_new_idea_to_old_db(
     new_text: str,

@@ -1,12 +1,12 @@
-from embedding import *
-from transform import *
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-import pandas as pd
 from embedding import match_new_idea_to_old_db
-from db import *
+from db import Company_DB
+from db_config import DB_CONFIG
+
+db = Company_DB(**DB_CONFIG)
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="pages"), name="static")

@@ -1,3 +1,4 @@
+import os
 import psycopg2
 import csv
 from tqdm import tqdm
@@ -169,8 +170,8 @@ class Company_DB:
             embeddings.append(emb)
 
         embeddings = np.array(embeddings)
-        df_clusters = self._cluster_embeddings(idea_ids, embeddings, eps, min_samples)
-        duplicate_groups, _ = self._extract_duplicates_and_uniques(df_clusters)
+        df_clusters = cluster_embeddings(idea_ids, embeddings, eps, min_samples)
+        duplicate_groups, _ = extract_duplicates_and_uniques(df_clusters)
 
         total_subgroups = 0
         self.cursor.execute("DELETE FROM clusters;")
@@ -178,7 +179,7 @@ class Company_DB:
         for group_num, group in enumerate(duplicate_groups):
             indices = [idea_ids.index(idea_id) for idea_id in group]
             token_lists = [key_words[i] for i in indices]
-            subgroups = self._smart_grouping(token_lists, threshold)
+            subgroups = smart_grouping(token_lists, threshold)
 
             for subgroup in subgroups:
                 subgroup_ids = [group[i] for i in subgroup]
@@ -189,51 +190,6 @@ class Company_DB:
                 total_subgroups += 1
 
         print(f"Обработано кластеров: {len(duplicate_groups)}, всего подгрупп: {total_subgroups}")
-
-    def _cluster_embeddings(self, idea_ids, embeddings, eps=0.25, min_samples=2):
-        clustering = DBSCAN(metric='cosine', eps=eps, min_samples=min_samples)
-        labels = clustering.fit_predict(embeddings)
-
-        df = pd.DataFrame({
-            'idea_id': idea_ids,
-            'cluster_id': labels
-        })
-        return df
-
-    def _extract_duplicates_and_uniques(self, df_clusters):
-        groups = df_clusters.groupby('cluster_id')['idea_id'].apply(list)
-
-        duplicates = []
-        for cid, group in tqdm(groups.items(), desc="Поиск повторов"):
-            if cid != -1 and len(group) > 1:
-                duplicates.append(group)
-
-        uniques = groups.get(-1, [])
-        return duplicates, uniques
-
-    def _smart_grouping(self, token_lists, threshold=20):
-        def similarity(a, b):
-            set_a, set_b = set(a), set(b)
-            intersection = set_a & set_b
-            union = set_a | set_b
-            return 100 * len(intersection) / len(union) if union else 0.0
-
-        token_lists = [tokens if tokens else ['АРГЕС'] for tokens in token_lists]
-        used = [False] * len(token_lists)
-        groups = []
-
-        for i, tokens in enumerate(token_lists):
-            if used[i]:
-                continue
-            group = [i]
-            used[i] = True
-            for j in range(i + 1, len(token_lists)):
-                if not used[j] and similarity(tokens, token_lists[j]) >= threshold:
-                    group.append(j)
-                    used[j] = True
-            groups.append(group)
-
-        return groups
 
     def get_embedding(self, idea_id):
         """
@@ -249,13 +205,3 @@ class Company_DB:
         """
         self.cursor.close()
         self.conn.close()
-
-#Инициализация БД
-user = "myuser"
-password = "237213"
-db_name = "ideas_db"
-host = "localhost"
-
-db = Company_DB(db_name, user, password, host='localhost', port=5432)
-#db.init_db()
-

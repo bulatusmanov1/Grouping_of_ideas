@@ -1,8 +1,8 @@
+import os
+import json
+import tempfile
 import pandas as pd
 import numpy as np
-import json
-import os
-import tempfile
 from typing import List, Tuple
 
 def load_and_preprocess_data(file_path: str) -> pd.DataFrame:

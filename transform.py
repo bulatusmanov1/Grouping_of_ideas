@@ -19,36 +19,25 @@ def filter_organizations_spacy(data: list[str]) -> list[str]:
 
     return [x for x in data if is_organization(x)]
 
-def extract_duplicates_and_uniques(
-    df_clusters: pd.DataFrame
-) -> Tuple[List[List[str]], List[str]]:
+def extract_duplicates_and_uniques(df_clusters):
     """
     Делит идеи на кластеры повторов и уникальные.
     """
-    #print("Анализируем кластеры на повторы и уникальные идеи...")
-
     groups = df_clusters.groupby('cluster_id')['idea_id'].apply(list)
 
     duplicates = []
-    for cid, group in tqdm(groups.items(), desc="Поиск повторов", unit="кластер"):
+    for cid, group in tqdm(groups.items(), desc="Поиск повторов"):
         if cid != -1 and len(group) > 1:
             duplicates.append(group)
 
     uniques = groups.get(-1, [])
-
-    #print(f"Повторяющихся групп: {len(duplicates)}")
-    #print(f"Уникальных идей: {len(uniques)}")
-
     return duplicates, uniques
 
-def smart_grouping(
-    token_lists: List[List[str]],
-    threshold: float
-) -> List[List[int]]:
+def smart_grouping(token_lists, threshold=20):
     """
     Возвращает подгруппы, каждая из которых — список индексов token_lists, схожих по содержанию.
     """
-    def similarity(a: List[str], b: List[str]) -> float:
+    def similarity(a, b):
         set_a, set_b = set(a), set(b)
         intersection = set_a & set_b
         union = set_a | set_b
@@ -70,7 +59,6 @@ def smart_grouping(
         groups.append(group)
 
     return groups
-
 
 def get_key_words(texts: List[str]) -> list[list]:
     """
