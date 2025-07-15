@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Работа с модулями</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+    <div class="container my-5">
+        <h1 class="heading">Работа с модулями</h1>
+        <form method="post" action="/check_idea/">
+            <div class="form-group">
+                <label for="title">Заголовок</label>
+                <input type="text" name="title" id="title" class="form-control" placeholder="Введите заголовок" value="{{ title or '' }}" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Описание</label>
+                <textarea name="description" id="description" class="form-control" placeholder="Введите описание" rows="5" required>{{ description or '' }}</textarea>
+            </div>
+            <button type="submit" class="btn-custom">Проверить идею</button>
+        </form>
+
+        {% if results %}
+        <div class="result-container">
+            <h3 class="my-4">Результаты поиска совпадений:</h3>
+            {% for idea_id, text, sim in results %}
+                <div class="result-item">
+                    <h4>{{ idea_id }}</h4>
+                    <p><strong>Текст:</strong> {{ text }}</p>
+                    <p><strong>Сходство:</strong> {{ sim }}%</p>
+                    <hr class="divider">
+                </div>
+            {% endfor %}
+
+            <h4 class="my-4">Ближайшая подгруппа включает:</h4>
+            <p>{{ best_group['idea_ids'] | join(', ') }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Bootstrap JS (Optional, for any dynamic functionality) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

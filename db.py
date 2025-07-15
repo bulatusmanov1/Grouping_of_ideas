@@ -50,7 +50,6 @@ class Company_DB:
             );
         ''')
 
-
     def insert_data(self, idea_id, idea_title, idea_description, idea_key_words, embedding):
         """
         Вставка записи в таблицу ideas
@@ -97,7 +96,6 @@ class Company_DB:
             filtered_key_words.append(filtered)
 
         cleaned_texts = get_clean_text(texts, filtered_key_words)
-
         embeddings = compute_embeddings(cleaned_texts)
 
         for i, idea in enumerate(tqdm(ideas, desc="Загрузка в БД")):

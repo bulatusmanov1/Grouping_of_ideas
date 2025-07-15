@@ -5,7 +5,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 import pandas as pd
-from embedding import match_new_idea_to_old
+from embedding import match_new_idea_to_old_db
+from db import *
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="pages"), name="static")
@@ -17,9 +18,8 @@ async def read_root(request: Request):
 
 @app.post("/check_idea/", response_class=HTMLResponse)
 async def check_idea(request: Request, title: str = Form(...), description: str = Form(...)):
-    df = load_and_preprocess_data('data.csv')
     combined_text = title + " " + description
-    results, best_group = match_new_idea_to_old(combined_text, df)
+    results, best_group = match_new_idea_to_old_db(combined_text, db)
     return templates.TemplateResponse("index.html", {
         "request": request, 
         "results": results, 
