@@ -8,7 +8,6 @@ from sentence_transformers import SentenceTransformer
 from jsonl import *
 from embedding import *
 from transform import *
-from db.db_class import Company_DB
 
 def compute_embeddings(texts: List[str], model_name: str = 'all-MiniLM-L6-v2') -> np.ndarray:
     """
@@ -30,7 +29,7 @@ def cluster_embeddings(idea_ids, embeddings, eps=0.25, min_samples=2):
 
 def match_new_idea_to_old_db(
     new_text: str,
-    db: Company_DB,
+    db,
     top_n: int = 15,
     model_name: str = 'all-MiniLM-L6-v2'
 ) -> Tuple[List[Tuple[str, str, float]], Dict]:

@@ -4,9 +4,9 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from embedding import match_new_idea_to_old_db
 from db import Company_DB
-from db_config import DB_CONFIG
+from db_config import DB_SETTINGS
 
-db = Company_DB(**DB_CONFIG)
+db = Company_DB(**DB_SETTINGS)
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="pages"), name="static")
