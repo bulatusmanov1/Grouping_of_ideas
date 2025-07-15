@@ -1,4 +1,3 @@
-import os
 import psycopg2
 import csv
 from tqdm import tqdm
