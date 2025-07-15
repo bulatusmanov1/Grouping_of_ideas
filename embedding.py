@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer
 from jsonl import *
 from embedding import *
 from transform import *
-from db.db_class import Company_DB
+from db import Company_DB
 
 def compute_embeddings(texts: List[str], model_name: str = 'all-MiniLM-L6-v2') -> np.ndarray:
     """
