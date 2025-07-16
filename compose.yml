@@ -1,0 +1,31 @@
+services:
+  db:
+    image: postgres:17
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: ideas_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8001"
+    volumes:
+      - .:/app
+    restart: unless-stopped
+    depends_on:
+      - db
+    env_file:
+      - .env
+
+volumes:
+  pgdata:

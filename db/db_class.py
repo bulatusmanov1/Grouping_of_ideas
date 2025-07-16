@@ -1,21 +1,26 @@
 import psycopg2
 import csv
 from tqdm import tqdm
-from transform import *
-from embedding import *
+from utils.transform import *
+from utils.embedding import *
+import psycopg2
+from db_config import config
+
+conn = psycopg2.connect(**config.DB_SETTINGS)
+import psycopg2
 
 class Company_DB:
-    def __init__(self, db_name, user, password, host='localhost', port=5432):
-        """
-        Инициализация соединения с PostgreSQL
-        """
+    def __init__(self, dbname, user, password, host, port):
         self.conn = psycopg2.connect(
-            dbname = db_name,
-            user = user,
-            password = password,
-            host = host,
-            port = port
+            dbname=dbname,
+            user=user,
+            password=password,
+            host=host,
+            port=port
         )
+        """
+        Инициализация соединения с PostgreSQLч>
+        """
         self.conn.autocommit = True
         self.cursor = self.conn.cursor()
 
