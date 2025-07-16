@@ -5,9 +5,9 @@ from typing import List, Dict, Tuple
 from sklearn.cluster import DBSCAN
 from sklearn.metrics.pairwise import cosine_similarity
 from sentence_transformers import SentenceTransformer
-from jsonl import *
-from embedding import *
-from transform import *
+from utils.jsonl import *
+from utils.embedding import *
+from utils.transform import *
 
 def compute_embeddings(texts: List[str], model_name: str = 'all-MiniLM-L6-v2') -> np.ndarray:
     """

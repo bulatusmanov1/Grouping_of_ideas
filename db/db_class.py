@@ -2,8 +2,8 @@ import os
 import psycopg2
 import csv
 from tqdm import tqdm
-from transform import *
-from embedding import *
+from utils.transform import *
+from utils.embedding import *
 import psycopg2
 from db_config import config
 
