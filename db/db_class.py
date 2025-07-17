@@ -195,13 +195,54 @@ class Company_DB:
 
         print(f"Обработано кластеров: {len(duplicate_groups)}, всего подгрупп: {total_subgroups}")
 
-    def get_embedding(self, idea_id):
+    def delete_idea(self, idea_id: str):
         """
-        Получить эмбеддинг по ID
+        Удаление идеи из базы данных по её ID
+        Параметры:
+            idea_id: идентификатор идеи для удаления
+        Возвращает:
+            bool: True если удаление прошло успешно, False если идея не найдена
         """
-        self.cursor.execute('SELECT idea_embedding FROM users WHERE idea_id = %s', (idea_id,))
-        result = self.cursor.fetchone()
-        return result[0] if result else None
+        try:
+            self.cursor.execute(
+                "DELETE FROM ideas WHERE idea_id = %s",
+                (idea_id,)
+            )
+            if self.cursor.rowcount > 0:
+                print(f"Идея {idea_id} успешно удалена")
+                self._cleanup_clusters(idea_id)
+                return True
+            else:
+                print(f"Идея {idea_id} не найдена")
+                return False
+                
+        except Exception as e:
+            print(f"Ошибка при удалении идеи {idea_id}: {str(e)}")
+            return False
+
+    def _cleanup_clusters(self, idea_id: str):
+        """
+        Приватный метод для очистки упоминаний идеи в кластерах
+        """
+        try:
+            self.cursor.execute(
+                "SELECT cluster_id, clusters FROM clusters WHERE %s = ANY(clusters)",
+                (idea_id,)
+            )
+            for cluster_id, clusters in self.cursor.fetchall():
+                updated_clusters = [id for id in clusters if id != idea_id]
+                if updated_clusters:
+                    self.cursor.execute(
+                        "UPDATE clusters SET clusters = %s WHERE cluster_id = %s",
+                        (updated_clusters, cluster_id)
+                    )
+                else:
+                    self.cursor.execute(
+                        "DELETE FROM clusters WHERE cluster_id = %s",
+                        (cluster_id,)
+                    )   
+        except Exception as e:
+            print(f"Ошибка при очистке кластеров: {str(e)}")
 
     def close(self):
         """

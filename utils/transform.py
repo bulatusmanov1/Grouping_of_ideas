@@ -121,3 +121,62 @@ def get_clean_text(texts: List[str], key_words_list: list[list]) -> list[str]:
             text = re.sub(rf'\b{re.escape(word)}\b', '', text, flags=re.IGNORECASE)
         cleaned_texts.append(text)
     return cleaned_texts
+
+def is_sql_injection(input_str: str) -> bool:
+    """
+    Проверяет, содержит ли строка потенциальную SQL-инъекцию для PostgreSQL
+    Параметры:
+        input_str: строка для проверки
+    Возвращает:
+        bool: True если обнаружены признаки инъекции, False если строка безопасна
+    """
+    if not isinstance(input_str, str):
+        return False
+    normalized = re.sub(r'\\[\'"\\]', '', input_str.lower())
+    patterns = [
+        r'--.*$',
+        r'/\*.*?\*/',
+        r'\b(union|select|insert|update|delete|drop|alter|create|truncate)\b',
+        r';.*$',
+        r'\|\|.*$',
+        r'pg_catalog|information_schema',
+        r'\b(COPY|FROM\s+PROGRAM|TO\s+STDOUT)\b',
+        r'\b(exec|execute|system|eval)\b',
+        r'[\'"].*?[\'"]\s*[+=]',
+        r'chr\(\d+\)',
+        r'\bpg_sleep\(\d+\)',
+        r'\bWAITFOR\s+DELAY\b'
+    ]
+
+    basic_red_flags = [
+        "'", "\"", ";", "--", "/*", "*/", 
+        "=", ">", "<", "*", "%", "|"
+    ]
+    
+    if len(normalized) > 1000:
+        return True
+        
+    if any(char in normalized for char in basic_red_flags):
+        for pattern in patterns:
+            if re.search(pattern, normalized, re.IGNORECASE | re.DOTALL):
+                return True
+                
+    return False
+
+
+def sanitize_sql_input(input_str: str) -> str:
+    """
+    Подготавливает строку для безопасного использования в SQL-запросах PostgreSQL
+    Параметры:
+        input_str: строка для обработки
+    Возвращает:
+        str: безопасная строка, пригодная для использования в параметризованных запросах
+    Важно: Все равно используйте параметризованные запросы!
+    """
+    if not isinstance(input_str, str):
+        return ''
+    
+    sanitized = re.sub(r"[\';\"\\\-\-\/\*]", "", input_str)
+    sanitized = re.sub(r"[\x00-\x1F]", "", sanitized)
+
+    return sanitized
