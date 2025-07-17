@@ -19,7 +19,7 @@ class Company_DB:
             port=port
         )
         """
-        Инициализация соединения с PostgreSQLч>
+        Инициализация соединения с PostgreSQL
         """
         self.conn.autocommit = True
         self.cursor = self.conn.cursor()
