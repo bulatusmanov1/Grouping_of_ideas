@@ -1,0 +1,46 @@
+[2025-07-17 07:32:00] INFO main: Application started.
+[2025-07-17 07:32:14] INFO main: Request: GET /check_idea/
+[2025-07-17 07:32:14] INFO main: Response: GET /check_idea/ - 405 in 0.0024s
+[2025-07-17 07:32:19] INFO main: Request: GET /
+[2025-07-17 07:32:19] INFO main: Response: GET / - 200 in 0.0107s
+[2025-07-17 07:32:19] INFO main: Request: GET /static/styles.css
+[2025-07-17 07:32:19] INFO main: Response: GET /static/styles.css - 304 in 0.0083s
+[2025-07-17 07:32:19] INFO main: Request: GET /apple-touch-icon-precomposed.png
+[2025-07-17 07:32:19] INFO main: Response: GET /apple-touch-icon-precomposed.png - 404 in 0.0011s
+[2025-07-17 07:32:19] INFO main: Request: GET /apple-touch-icon.png
+[2025-07-17 07:32:19] INFO main: Request: GET /favicon.ico
+[2025-07-17 07:32:19] INFO main: Response: GET /apple-touch-icon.png - 404 in 0.001s
+[2025-07-17 07:32:19] INFO main: Response: GET /favicon.ico - 404 in 0.0012s
+[2025-07-17 07:32:44] INFO main: Request: POST /check_idea/
+[2025-07-17 07:32:51] INFO main: Response: POST /check_idea/ - 200 in 7.0751s
+[2025-07-17 07:33:15] INFO main: Request: GET /check_idea/
+[2025-07-17 07:33:15] INFO main: Response: GET /check_idea/ - 405 in 0.0008s
+[2025-07-17 07:33:16] INFO main: Request: GET /docs
+[2025-07-17 07:33:16] INFO main: Response: GET /docs - 200 in 0.0007s
+[2025-07-17 07:33:16] INFO main: Request: GET /openapi.json
+[2025-07-17 07:33:16] INFO main: Response: GET /openapi.json - 200 in 0.0042s
+[2025-07-17 07:33:38] INFO main: Request: POST /add_idea
+[2025-07-17 07:33:38] INFO main: Response: POST /add_idea - 200 in 0.0014s
+[2025-07-17 07:33:40] INFO main: Request: POST /add_idea
+[2025-07-17 07:33:40] INFO main: Response: POST /add_idea - 200 in 0.0024s
+[2025-07-17 07:34:04] INFO main: Request: POST /add_idea
+[2025-07-17 07:34:12] INFO main: Response: POST /add_idea - 200 in 7.5706s
+[2025-07-17 07:34:50] INFO main: Request: POST /results
+[2025-07-17 07:34:56] INFO main: Response: POST /results - 200 in 6.0889s
+[2025-07-17 07:35:14] INFO main: Request: GET /docs
+[2025-07-17 07:35:14] INFO main: Response: GET /docs - 200 in 0.0015s
+[2025-07-17 07:35:14] INFO main: Request: GET /openapi.json
+[2025-07-17 07:35:14] INFO main: Response: GET /openapi.json - 200 in 0.0008s
+[2025-07-17 07:35:24] INFO main: Request: GET /resudfdfsdasda
+[2025-07-17 07:35:24] INFO main: Response: GET /resudfdfsdasda - 404 in 0.0005s
+[2025-07-17 07:36:32] INFO main: Request: GET /docs
+[2025-07-17 07:36:32] INFO main: Response: GET /docs - 200 in 0.0011s
+[2025-07-17 07:36:39] INFO main: Request: GET /openapi.json
+[2025-07-17 07:36:39] INFO main: Response: GET /openapi.json - 200 in 0.0022s
+[2025-07-17 07:38:41] INFO main: Request: POST /add_idea
+[2025-07-17 07:38:41] INFO main: Response: POST /add_idea - 422 in 0.0008s
+[2025-07-17 07:38:42] INFO main: Request: POST /add_idea
+[2025-07-17 07:38:42] INFO main: Response: POST /add_idea - 422 in 0.0011s
+[2025-07-17 07:38:44] INFO main: Request: POST /add_idea
+[2025-07-17 07:38:44] INFO main: Response: POST /add_idea - 422 in 0.0014s
+[2025-07-17 07:39:53] INFO main: Application stopped.
