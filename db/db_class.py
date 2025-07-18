@@ -244,6 +244,21 @@ class Company_DB:
         except Exception as e:
             print(f"Ошибка при очистке кластеров: {str(e)}")
 
+    def idea_exists(self, idea_id: str) -> bool:
+        """
+        Проверка наличия идеи по её ID в таблице ideas.
+        Возвращает True, если идея существует, иначе False.
+        """
+        try:
+            self.cursor.execute(
+                "SELECT 1 FROM ideas WHERE idea_id = %s LIMIT 1;",
+                (idea_id,)
+            )
+            return self.cursor.fetchone() is not None
+        except Exception as e:
+            print(f"Ошибка при проверке наличия идеи: {str(e)}")
+            return False
+
     def close(self):
         """
         Закрытие соединения
