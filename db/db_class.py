@@ -3,7 +3,6 @@ import csv
 from tqdm import tqdm
 from utils.transform import *
 from utils.embedding import *
-import psycopg2
 from db_config import config
 
 conn = psycopg2.connect(**config.DB_SETTINGS)

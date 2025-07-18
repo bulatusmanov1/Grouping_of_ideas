@@ -68,15 +68,19 @@ async def add_idea(idea: Idea):
     Добавляет новую идею в базу данных.
     Если идея уже существует, она не добавляется.
     """
-    if idea.idea_id:
-        try:
-            db.add_new_ideas([(idea.idea_id, idea.title, idea.description)])
-            db.process_clusters()
-            return {"status": "ok", "idea_id": idea.idea_id}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-    else:
+    if not idea.idea_id:
         return {"status": "ignored", "reason": "idea_id not provided"}
+
+    try:
+        if db.idea_exists(idea.idea_id):
+            return {"status": "skipped", "reason": f"Идея с ID {idea.idea_id} уже существует"}
+
+        db.add_new_ideas([(idea.idea_id, idea.title, idea.description)])
+        db.process_clusters()
+        return {"status": "ok", "idea_id": idea.idea_id}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/results")
 async def get_results(title: str = Form(...), description: str = Form(...)):
