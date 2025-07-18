@@ -27,9 +27,17 @@ templates = Jinja2Templates(directory="pages")
 
 db = Company_DB(**DB_SETTINGS)
 
+class UpdateRequest(BaseModel):
+    idea_id: str
+    title: str
+    description: str
+
 class Idea(BaseModel):
     title: str
     description: str
+    idea_id: str
+
+class DeleteRequest(BaseModel):
     idea_id: str
 
 class LoggingMiddleware(BaseHTTPMiddleware):
@@ -56,6 +64,10 @@ async def read_root(request: Request):
 
 @app.post("/add_idea")
 async def add_idea(idea: Idea):
+    """
+    Добавляет новую идею в базу данных.
+    Если идея уже существует, она не добавляется.
+    """
     if idea.idea_id:
         try:
             db.add_new_ideas([(idea.idea_id, idea.title, idea.description)])
@@ -68,6 +80,10 @@ async def add_idea(idea: Idea):
 
 @app.post("/results")
 async def get_results(title: str = Form(...), description: str = Form(...)):
+    """
+    Получает результаты поиска по идее.
+    Возвращает список похожих идей и лучшую группу.
+    """
     try:
         combined_text = f"{title} {description}"
         results, best_group = match_new_idea_to_old_db(combined_text, db)
@@ -89,3 +105,31 @@ async def check_idea(request: Request, title: str = Form(...), description: str 
         "title": title,
         "description": description
     })
+
+@app.delete("/delete_idea/")
+def delete_idea_api(payload: DeleteRequest):
+    """
+    Удаляет идею по её ID.
+    Если идея не существует — ничего не происходит.
+    """
+    success = db.delete_idea(payload.idea_id)
+    if success:
+        return {"status": "success", "message": f"Идея {payload.idea_id} удалена"}
+    else:
+        raise HTTPException(status_code=404, detail=f"Идея {payload.idea_id} не найдена")
+
+@app.put("/update_idea/")
+def update_idea(payload: UpdateRequest):
+    """
+    Обновляет существующую идею по её ID.
+    Если идея не существует — ничего не происходит.
+    """
+    if db.idea_exists(payload.idea_id):
+        try:
+            db.add_new_ideas([(payload.idea_id, payload.title, payload.description)])
+            db.process_clusters()
+            return {"status": "updated", "idea_id": payload.idea_id}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Ошибка при обновлении: {str(e)}")
+    else:
+        raise HTTPException(status_code=404, detail=f"Идея с ID {payload.idea_id} не найдена — не обновлена")
